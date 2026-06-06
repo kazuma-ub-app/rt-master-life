@@ -39,9 +39,50 @@ header,main,.tabs{display:none!important}
 @page{size:A4;margin:10mm}
 }
 </style>
+
+<meta name="theme-color" content="#12345a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RT MASTER">
+<link rel="icon" href="rt-master-icon.png">
+<link rel="apple-touch-icon" href="rt-master-icon.png">
+<style>
+#splashScreen{
+  position:fixed;inset:0;background:#12345a;color:#f2e5c6;z-index:99999;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  font-family:system-ui,"Noto Sans JP",sans-serif;
+}
+#splashScreen .badge{
+  width:min(74vw,340px);padding:28px 22px;border:6px solid #f2e5c6;border-radius:28px;
+  box-shadow:0 0 0 8px rgba(242,229,198,.14) inset;
+}
+#splashScreen img{width:150px;height:150px;border-radius:32px;object-fit:cover;margin-bottom:14px}
+#splashScreen h1{font-size:38px;line-height:1;margin:8px 0;font-weight:1000;letter-spacing:1px}
+#splashScreen .red{color:#e33636}
+#splashScreen p{margin:8px 0;font-size:16px;font-weight:900;letter-spacing:1.5px}
+#splashScreen small{display:block;margin-top:12px;font-size:13px;font-weight:800;opacity:.9}
+#splashScreen.hide{opacity:0;transition:opacity .28s ease;pointer-events:none}
+</style>
+
 </head>
 <body>
-<header>RT MASTER Lite v1.0</header>
+<div id="splashScreen">
+  <div class="badge">
+    <img src="rt-master-icon.png" alt="RT MASTER">
+    <h1>RT <span class="red">MASTER</span></h1>
+    <p>BUILT TO WORK</p>
+    <small>Lite Version 1.1</small>
+  </div>
+</div>
+<script>
+window.addEventListener("load",function(){
+  setTimeout(function(){
+    var s=document.getElementById("splashScreen");
+    if(s){s.classList.add("hide");setTimeout(function(){s.remove();},320);}
+  },1000);
+});
+</script>
+
+<header>RT MASTER Lite v1.1</header>
 <main>
 <section id="list" class="card"><div class="title">案件一覧</div><button onclick="newP()">＋ 新規案件</button><div id="plist"></div></section>
 <section id="project" class="card hidden"><div class="title">案件情報</div><label>案件名</label><input id="pname"><div class="grid"><div><label>RTサイズ</label><select id="size"><option>1014</option><option selected>1116</option><option>1216</option></select></div><div><label>防水パン</label><select id="pan"><option>なし</option><option>あり</option></select></div></div><button onclick="saveP()">案件保存</button><button onclick="show('items')">器具選択へ</button><button class="white" onclick="show('list')">戻る</button></section>
@@ -76,7 +117,7 @@ function items(p){let g=group(p.size),arr=[];if(p.mirror&&p.mirror!=="none"){let
 function calc(){if(!cur){alert("先に案件を作成してください");show("list");return}saveSilent();let p=load().find(x=>x.id==cur);rlist.innerHTML=`<div class="result"><div class="name">${esc(p.name)}</div><div class="meta">RT ${esc(p.size)} / 防水パン:${esc(p.pan||"なし")}</div></div>`;items(p).forEach(([n,d])=>{let e=document.createElement("div");e.className="result";e.innerHTML=`<div class="name">${esc(n)}</div><div class="dim">${esc(d)}</div>`;rlist.appendChild(e)});show("res")}
 function show(id){document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");if(id==="list")render();if(id==="backup")backupInfo.textContent="保存案件数："+load().length+"件";scrollTo(0,0)}
 function copyR(){navigator.clipboard.writeText([...document.querySelectorAll(".result")].map(x=>x.innerText.trim()).join("\n\n"));alert("コピーしました")}
-function printPdf(){if(!cur){alert("先に案件を作成してください");return}saveSilent();let p=load().find(x=>x.id==cur),today=new Date().toLocaleDateString("ja-JP");let s=`<div class="sheet-title">RT 器具取付寸法図</div><div class="sheet-info"><div>案件名：${esc(p.name)}</div><div>RTサイズ：${esc(p.size)}</div><div>防水パン：${esc(p.pan||"なし")}</div><div>出力日：${today}</div></div><div class="device-grid">`;items(p).forEach(([n,d])=>{s+=`<div class="device-card"><div class="device-name">${esc(n)}</div><div class="device-dim">${esc(d)}</div></div>`});s+=`</div><div class="sheet-note">現場メモ：</div><div class="sheet-footer">出力：RT MASTER Lite v1.0</div>`;print.innerHTML=s;window.print()}
+function printPdf(){if(!cur){alert("先に案件を作成してください");return}saveSilent();let p=load().find(x=>x.id==cur),today=new Date().toLocaleDateString("ja-JP");let s=`<div class="sheet-title">RT 器具取付寸法図</div><div class="sheet-info"><div>案件名：${esc(p.name)}</div><div>RTサイズ：${esc(p.size)}</div><div>防水パン：${esc(p.pan||"なし")}</div><div>出力日：${today}</div></div><div class="device-grid">`;items(p).forEach(([n,d])=>{s+=`<div class="device-card"><div class="device-name">${esc(n)}</div><div class="device-dim">${esc(d)}</div></div>`});s+=`</div><div class="sheet-note">現場メモ：</div><div class="sheet-footer">出力：RT MASTER Lite v1.1</div>`;print.innerHTML=s;window.print()}
 function exportBackup(){let data={type:"rt-master-lite-backup",version:"1.0",createdAt:new Date().toISOString(),projects:load()};let blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});let url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="RT_MASTER_BACKUP_"+new Date().toISOString().slice(0,10).replaceAll("-","")+".json";a.click();URL.revokeObjectURL(url)}
 function importBackupFile(file){if(!file)return;let r=new FileReader();r.onload=()=>{try{let data=JSON.parse(r.result);if(!Array.isArray(data.projects)){alert("形式が違います");return}if(confirm("バックアップ内容で上書きしますか？")){store(data.projects);cur=null;render();alert("復元しました");show("list")}}catch(e){alert("読み込み失敗")}};r.readAsText(file)}
 function clearData(){if(confirm("案件データを削除しますか？")){localStorage.removeItem(KEY);cur=null;render();show("list")}}
