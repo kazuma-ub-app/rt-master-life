@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RT MASTER Lite</title>
+<style>
+body{margin:0;background:#f3f3f3;color:#111;font-family:system-ui,"Noto Sans JP",sans-serif}
+header{background:#111;color:#fff;text-align:center;padding:16px;font-size:20px;font-weight:900;position:sticky;top:0}
+main{max-width:760px;margin:auto;padding:14px 14px 82px}
+.card{background:#fff;border:2px solid #111;border-radius:14px;padding:14px;margin-bottom:14px}
+.title{font-size:18px;font-weight:900;border-bottom:2px solid #111;padding-bottom:8px;margin-bottom:10px}
+.sub{background:#111;color:#fff;font-weight:900;border-radius:8px;padding:8px;margin:16px 0 8px}
+label{display:block;font-weight:800;margin-top:10px}
+input,select,button{width:100%;font-size:18px;padding:12px;border:2px solid #111;border-radius:10px;background:#fff}
+button{background:#111;color:#fff;font-weight:900;margin-top:10px}.white{background:#fff;color:#111}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.item{display:flex;gap:12px;align-items:center;border:2px solid #111;border-radius:10px;padding:12px;margin:10px 0;font-weight:800}
+.item input{width:28px;height:28px}.project{border:2px solid #111;border-radius:10px;padding:12px;margin:10px 0}
+.pname{font-size:18px;font-weight:900}.hidden{display:none}.result{border-top:2px solid #111;padding:12px 0}.result:first-child{border-top:0}
+.name{font-size:19px;font-weight:900}.dim{white-space:pre-wrap;font-size:22px;font-weight:900;line-height:1.55;margin-top:6px}
+.meta{font-size:14px;color:#444;font-weight:800;line-height:1.5}
+.tabs{position:fixed;bottom:0;left:0;right:0;max-width:760px;margin:auto;background:#fff;border-top:2px solid #111;display:flex}
+.tabs button{border:0;border-right:1px solid #ccc;border-radius:0;margin:0;font-size:13px;padding:11px 4px}
+#print{display:none}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.dim{font-size:20px}}
+@media print{
+header,main,.tabs{display:none!important}
+#print{display:block!important;color:#111;font-family:system-ui,"Noto Sans JP",sans-serif}
+.sheet-title{font-size:24px;font-weight:1000;text-align:center;border-bottom:4px solid #111;padding-bottom:8px;margin-bottom:10px}
+.sheet-info{border:3px solid #111;padding:10px;margin-bottom:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;font-weight:900}
+.sheet-info div{border-bottom:1px solid #bbb;padding:3px 0}
+.device-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.device-card{border:2px solid #111;padding:8px;break-inside:avoid;min-height:92px}
+.device-name{font-size:15px;font-weight:1000;border-bottom:2px solid #111;padding-bottom:4px;margin-bottom:6px}
+.device-dim{white-space:pre-wrap;font-size:16px;font-weight:1000;line-height:1.42}
+.sheet-note{border:2px solid #111;margin-top:10px;padding:8px;font-size:12px;font-weight:800;min-height:48px}
+.sheet-footer{font-size:10px;text-align:right;margin-top:8px;color:#444}
+@page{size:A4;margin:10mm}
+}
+</style>
+</head>
+<body>
+<header>RT MASTER Lite v1.0</header>
+<main>
+<section id="list" class="card"><div class="title">案件一覧</div><button onclick="newP()">＋ 新規案件</button><div id="plist"></div></section>
+<section id="project" class="card hidden"><div class="title">案件情報</div><label>案件名</label><input id="pname"><div class="grid"><div><label>RTサイズ</label><select id="size"><option>1014</option><option selected>1116</option><option>1216</option></select></div><div><label>防水パン</label><select id="pan"><option>なし</option><option>あり</option></select></div></div><button onclick="saveP()">案件保存</button><button onclick="show('items')">器具選択へ</button><button class="white" onclick="show('list')">戻る</button></section>
+<section id="items" class="card hidden"><div class="title">器具選択</div>
+<div class="sub">ミラー</div><label>ミラー種類</label><select id="mirror"><option value="none">ミラーなし</option><option value="h600">縦長ミラー H600</option><option value="h915">縦長ミラー H915</option><option value="square">四角ミラー W303×H455</option></select>
+<div class="sub">収納棚</div><label class="item"><input type="checkbox" id="shelf2">収納棚 W175 2段</label><label class="item"><input type="checkbox" id="shelf3">収納棚 W175 3段</label>
+<div class="sub">カウンター</div><label class="item"><input type="checkbox" id="accentCounter">アクセントカウンター</label><label class="item"><input type="checkbox" id="smartCounter">スマートカウンター</label>
+<div class="sub">その他</div><label class="item"><input type="checkbox" id="shower">シャワーフック</label><label class="item"><input type="checkbox" id="lidHook">風呂ふた3点フック</label>
+<button onclick="saveP()">器具選択を保存</button><button onclick="calc()">寸法表示</button></section>
+<section id="res" class="card hidden"><div class="title">寸法結果</div><div class="meta">「寸法図PDF作成」で印刷・タブレット確認用の寸法図を作成できます。</div><div id="rlist"></div><button onclick="copyR()">寸法コピー</button><button onclick="printPdf()">寸法図PDF作成</button></section>
+<section id="backup" class="card hidden"><div class="title">バックアップ</div><div id="backupInfo" class="meta"></div><button onclick="exportBackup()">バックアップ出力</button><label>バックアップ読込</label><input type="file" accept=".json,application/json" onchange="importBackupFile(this.files[0])"><button class="white" onclick="clearData()">この端末の案件データ削除</button></section>
+</main>
+<div id="print"></div>
+<div class="tabs"><button onclick="show('list')">一覧</button><button onclick="show('project')">案件</button><button onclick="show('items')">器具</button><button onclick="calc()">寸法</button><button onclick="show('backup')">保存</button></div>
+<script>
+const KEY="rt_master_lite_v10";let cur=null;
+function group(s){return s==="1014"?"1014":"1116_1216"}
+const mirrorData={h600:{name:"縦長ミラー H600","1014":"→300→500\n\n↑1255\n↑690","1116_1216":"→350→550\n\n↑1255\n↑690"},h915:{name:"縦長ミラー H915","1014":"→300→500\n\n↑1605\n↑690","1116_1216":"→350→550\n\n↑1605\n↑690"},square:{name:"四角ミラー W303×H455","1014":"→300→500\n\n↑1130\n↑710","1116_1216":"→350→550\n\n↑1130\n↑710"}};
+const shelfData={shelf2:{name:"収納棚 W175 2段","1014":"→75→185\n\n↑1135\n↑835","1116_1216":"→95→205\n\n↑1135\n↑835"},shelf3:{name:"収納棚 W175 3段","1014":"→75→185\n\n↑1435\n↑1135\n↑835","1116_1216":"→95→205\n\n↑1435\n↑1135\n↑835"}};
+const counterData={accentCounter:{name:"アクセントカウンター","1014":"→260→400→540\n\n↑530","1116_1216":"→310→450→590\n\n↑530"},smartCounter:{name:"スマートカウンター","1014":"→140→255→545→660\n\n↑520","1116_1216":"→140→305→595→760\n\n↑520"}};
+const showerData={"1014":"→650\n\n上段\n↑1700\n↑1680\n\n下段\n↑1000\n↑980","1116_1216":"→725\n\n上段\n↑1700\n↑1680\n\n下段\n↑1000\n↑980"};
+function lidData(s,pan){if(s==="1014")return"上段\n→300\n↑948\n\n下段\n→120→420\n↑405";if(s==="1116"&&pan==="あり")return"上段\n→350\n↑990\n\n下段\n→120→580\n↑397";if(s==="1116")return"上段\n→350\n↑998\n\n下段\n→120→580\n↑405";if(s==="1216"&&pan==="あり")return"上段\n→350\n↑1040\n\n下段\n→120→580\n↑397";return"上段\n→350\n↑1048\n\n下段\n→120→580\n↑405"}
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){return[]}}function store(a){localStorage.setItem(KEY,JSON.stringify(a))}
+function form(){return{id:cur,name:pname.value||"未入力",size:size.value,pan:pan.value,mirror:mirror.value,shelf2:shelf2.checked,shelf3:shelf3.checked,accentCounter:accentCounter.checked,smartCounter:smartCounter.checked,shower:shower.checked,lidHook:lidHook.checked}}
+function newP(){cur="p"+Date.now();let p=form();p.name="新規案件";let a=load();a.unshift(p);store(a);openP(cur)}
+function openP(id){cur=id;let p=load().find(x=>x.id==id);if(!p)return;pname.value=p.name;size.value=p.size||"1116";pan.value=p.pan||"なし";mirror.value=p.mirror||"none";shelf2.checked=!!p.shelf2;shelf3.checked=!!p.shelf3;accentCounter.checked=!!p.accentCounter;smartCounter.checked=!!p.smartCounter;shower.checked=!!p.shower;lidHook.checked=!!p.lidHook;show("project")}
+function saveP(){if(!cur){newP();return}let a=load(),i=a.findIndex(x=>x.id==cur);if(i>=0)a[i]=form();else a.unshift(form());store(a);alert("保存しました");render()}
+function saveSilent(){if(!cur)return;let a=load(),i=a.findIndex(x=>x.id==cur);if(i>=0){a[i]=form();store(a)}}
+function delP(id){if(!confirm("削除しますか？"))return;store(load().filter(x=>x.id!=id));if(cur===id)cur=null;render();show("list")}
+function render(){let a=load();plist.innerHTML=a.length?"":"<div class='meta' style='margin-top:12px'>まだ案件がありません</div>";a.forEach(p=>{let d=document.createElement("div");d.className="project";d.innerHTML=`<div class="pname">${esc(p.name)}</div><div class="meta">RT ${esc(p.size)} / 防水パン:${esc(p.pan||"なし")}</div><button onclick="openP('${p.id}')">開く</button><button class="white" onclick="delP('${p.id}')">削除</button>`;plist.appendChild(d)})}
+function items(p){let g=group(p.size),arr=[];if(p.mirror&&p.mirror!=="none"){let m=mirrorData[p.mirror];arr.push([m.name,m[g]])}if(p.shelf2)arr.push([shelfData.shelf2.name,shelfData.shelf2[g]]);if(p.shelf3)arr.push([shelfData.shelf3.name,shelfData.shelf3[g]]);if(p.accentCounter)arr.push([counterData.accentCounter.name,counterData.accentCounter[g]]);if(p.smartCounter)arr.push([counterData.smartCounter.name,counterData.smartCounter[g]]);if(p.shower)arr.push(["シャワーフック",showerData[g]]);if(p.lidHook)arr.push(["風呂ふた3点フック",lidData(p.size,p.pan)]);return arr}
+function calc(){if(!cur){alert("先に案件を作成してください");show("list");return}saveSilent();let p=load().find(x=>x.id==cur);rlist.innerHTML=`<div class="result"><div class="name">${esc(p.name)}</div><div class="meta">RT ${esc(p.size)} / 防水パン:${esc(p.pan||"なし")}</div></div>`;items(p).forEach(([n,d])=>{let e=document.createElement("div");e.className="result";e.innerHTML=`<div class="name">${esc(n)}</div><div class="dim">${esc(d)}</div>`;rlist.appendChild(e)});show("res")}
+function show(id){document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");if(id==="list")render();if(id==="backup")backupInfo.textContent="保存案件数："+load().length+"件";scrollTo(0,0)}
+function copyR(){navigator.clipboard.writeText([...document.querySelectorAll(".result")].map(x=>x.innerText.trim()).join("\n\n"));alert("コピーしました")}
+function printPdf(){if(!cur){alert("先に案件を作成してください");return}saveSilent();let p=load().find(x=>x.id==cur),today=new Date().toLocaleDateString("ja-JP");let s=`<div class="sheet-title">RT 器具取付寸法図</div><div class="sheet-info"><div>案件名：${esc(p.name)}</div><div>RTサイズ：${esc(p.size)}</div><div>防水パン：${esc(p.pan||"なし")}</div><div>出力日：${today}</div></div><div class="device-grid">`;items(p).forEach(([n,d])=>{s+=`<div class="device-card"><div class="device-name">${esc(n)}</div><div class="device-dim">${esc(d)}</div></div>`});s+=`</div><div class="sheet-note">現場メモ：</div><div class="sheet-footer">出力：RT MASTER Lite v1.0</div>`;print.innerHTML=s;window.print()}
+function exportBackup(){let data={type:"rt-master-lite-backup",version:"1.0",createdAt:new Date().toISOString(),projects:load()};let blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});let url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="RT_MASTER_BACKUP_"+new Date().toISOString().slice(0,10).replaceAll("-","")+".json";a.click();URL.revokeObjectURL(url)}
+function importBackupFile(file){if(!file)return;let r=new FileReader();r.onload=()=>{try{let data=JSON.parse(r.result);if(!Array.isArray(data.projects)){alert("形式が違います");return}if(confirm("バックアップ内容で上書きしますか？")){store(data.projects);cur=null;render();alert("復元しました");show("list")}}catch(e){alert("読み込み失敗")}};r.readAsText(file)}
+function clearData(){if(confirm("案件データを削除しますか？")){localStorage.removeItem(KEY);cur=null;render();show("list")}}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
+render();
+</script>
+</body>
+</html>
